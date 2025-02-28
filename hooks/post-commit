@@ -4,6 +4,8 @@ NEWEST_TAG=$(git describe --abbrev=0 --tags)
 
 SCRIPT_VERSION=$(grep "^version=" update.sh | awk -F= '{print $2}')
 
+echo "TAGGING $SCRIPT_VERSION"
+
 if [ x$NEWEST_TAG != x$SCRIPT_VERSION ]; then
     git tag -a $SCRIPT_VERSION -m "version $SCRIPT_VERSION"
 fi
