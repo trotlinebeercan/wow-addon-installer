@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.0.0
+version=1.1.0
 
 # TODO: download svn here, cache and set in path, then delete when finished
 #       https://www.visualsvn.com/files/Apache-Subversion-1.14.3.zip
@@ -13,6 +13,13 @@ declare -a allowed_directories=(
     AtlasLootClassic_Data AtlasLootClassic_DungeonsAndRaids AtlasLootClassic_Factions
     AtlasLootClassic_Options AtlasLootClassic_PvP
 )
+
+make_and_clean_directory()
+{
+    rm -rf "$1"
+    mkdir -p "$1"
+    echo "$1"
+}
 
 grep_directories()
 {
@@ -31,19 +38,21 @@ package_allowed_directories()
     done
 }
 
-target_directory="$SCRIPT_DIR/package"
+source_directory=`make_and_clean_directory "$SCRIPT_DIR/sources"`
+target_directory=`make_and_clean_directory "$SCRIPT_DIR/package"`
 
-rm -rf "$target_directory"
-mkdir -p "$target_directory"
+pushd "$source_directory"
 
 # AtlasLoot
+git clone --depth 1 https://github.com/snowflame0/AtlasLootClassic_Cata
 pushd AtlasLootClassic_Cata
 git reset --hard
-pull_result=`git pull --rebase`
+git pull --rebase
 package_allowed_directories "$target_directory"
-popd
+popd # AtlasLootClassic_Cata
 
 # ElvUI
+git clone --depth 1 https://github.com/tukui-org/ElvUI
 pushd ElvUI
 git reset --hard
 git pull --rebase
@@ -52,10 +61,10 @@ PACKAGER_URL="https://raw.githubusercontent.com/BigWigsMods/packager/master/rele
 curl -s $PACKAGER_URL | bash -s -- -c -d -z
 cp -a .release/ElvUI_Libraries/* "ElvUI_Libraries/"
 package_allowed_directories "$target_directory"
-popd
+popd # ElvUI
 
 # search for and remove previous installations, then install from package dir
-warcraft_root_relpath=`realpath -s --relative-to="$SCRIPT_DIR" "$SCRIPT_DIR/../"`
+warcraft_root_relpath=`realpath -s --relative-to="$SCRIPT_DIR" "$SCRIPT_DIR/../../"`
 for di in `find "$warcraft_root_relpath" -mindepth 1 -maxdepth 1 -type d -name "_*"`; do
     current_addons_path="$di/Interface/AddOns"
     for addon in ${allowed_directories[@]}; do
@@ -70,10 +79,11 @@ for di in `find "$warcraft_root_relpath" -mindepth 1 -maxdepth 1 -type d -name "
     done
 done
 
+popd # $sources_directory
 
 #### ATTIC
 
-## if the repo exists and doesn't have an update, don't build and package it
+## don't build and package addon if repo exists and no update is found
 # if [[ "$pull_result" =~ "Already up to date" ]]; then
 #     echo "detected no changes, skipping"
 # else
