@@ -1,6 +1,6 @@
 #!/bin/bash
 
-update_dot_sh_version=1.1.1
+update_dot_sh_version=1.1.2
 
 # TODO: download svn here, cache and set in path, then delete when finished
 #       https://www.visualsvn.com/files/Apache-Subversion-1.14.3.zip
@@ -56,7 +56,6 @@ git clone --depth 1 https://github.com/tukui-org/ElvUI
 pushd ElvUI
 git reset --hard
 git pull --rebase
-#rm -rf .release
 PACKAGER_URL="https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh"
 curl -s $PACKAGER_URL | bash -s -- -c -d -z
 cp -a .release/ElvUI_Libraries/* "ElvUI_Libraries/"
@@ -80,6 +79,10 @@ for di in `find "$warcraft_root_relpath" -mindepth 1 -maxdepth 1 -type d -name "
 done
 
 popd # $sources_directory
+
+# cleanup
+rm -rf "$source_directory"
+rm -rf "$target_directory"
 
 #### ATTIC
 
