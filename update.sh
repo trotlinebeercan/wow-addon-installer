@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.1.0
+update_dot_sh_version=1.1.0
 
 # TODO: download svn here, cache and set in path, then delete when finished
 #       https://www.visualsvn.com/files/Apache-Subversion-1.14.3.zip
